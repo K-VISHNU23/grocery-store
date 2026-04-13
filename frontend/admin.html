@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="admin-container">
+  <h2 style="text-align:center; color: #2ecc71;">Admin Dashboard</h2>
+
+  <!-- ADMIN INFO -->
+  <div class="admin-info">
+    <h3>👤 Admin Information</h3>
+    <p><strong>Name:</strong> Vishnu K</p>
+    <p><strong>Email:</strong> kvishnu1947@gmail.com</p>
+  </div>
+
+  <hr style="margin: 20px 0;">
+
+  <!-- ADD PRODUCT SECTION -->
+  <div class="admin-form">
+    <h3>➕ Add Product</h3>
+    <input id="name" placeholder="Product name">
+    <input id="price" type="number" placeholder="Price">
+    <input type="file" id="imgFile" accept="image/*" placeholder="Upload Image">
+    <input id="imgUrl" placeholder="OR Paste Image URL">
+    <button onclick="saveProduct()">Save Product</button>
+    <button onclick="logout()" style="background: #e74c3c; margin-left: 10px;">Logout</button>
+  </div>
+
+  <hr style="margin: 20px 0;">
+
+  <!-- PRODUCTS LIST -->
+  <h3>📦 Products List</h3>
+  <ul id="admin-list"></ul>
+
+  <hr style="margin: 20px 0;">
+
+  <!-- USERS LIST -->
+  <h3>👥 All Users</h3>
+  <ul id="users" style="max-height: 300px; overflow-y: auto;"></ul>
+
+  <hr style="margin: 20px 0;">
+
+  <!-- ORDERS LIST -->
+  <h3>🛒 All Orders</h3>
+  <ul id="orders" style="max-height: 300px; overflow-y: auto;"></ul>
+</div>
+
+<script src="admin.js"></script>
+</body>
+</html>

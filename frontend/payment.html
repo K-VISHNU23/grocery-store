@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment - FreshCart</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<script>
+if (!localStorage.getItem("role")) {
+  window.location.href = "login.html";
+}
+</script>
+
+<!-- NAVBAR -->
+<header class="navbar">
+  <h2 class="logo">🛒 FreshCart</h2>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="products.html">Shop</a>
+    <a href="cart.html">Cart</a>
+    <button onclick="toggleProfile()" class="profile-btn">👤</button>
+  </div>
+</header>
+
+<!-- PAYMENT SECTION -->
+<section class="payment-section">
+  <div class="payment-container">
+    <h1>💳 Secure Payment</h1>
+
+    <!-- ORDER SUMMARY -->
+    <div class="order-summary">
+      <h3>Order Summary</h3>
+      <p>Total Amount: <strong>₹<span id="amount">0</span></strong></p>
+    </div>
+
+    <!-- PAYMENT METHOD -->
+    <div class="payment-form">
+      <h3>Select Payment Method</h3>
+
+      <div class="payment-options">
+        <label class="payment-option">
+          <input type="radio" name="payment" value="cod" checked>
+          <span>💵 Cash on Delivery</span>
+          <p class="text-muted">Pay when order arrives</p>
+        </label>
+
+        <label class="payment-option">
+          <input type="radio" name="payment" value="upi">
+          <span>📱 UPI Payment</span>
+          <p class="text-muted">Pay using Google Pay, PhonePe, etc.</p>
+        </label>
+
+        <label class="payment-option">
+          <input type="radio" name="payment" value="card">
+          <span>💳 Debit/Credit Card</span>
+          <p class="text-muted">Secure card payment</p>
+        </label>
+      </div>
+
+      <!-- DELIVERY ADDRESS -->
+      <h3 style="margin-top:30px;">Delivery Address</h3>
+      <input type="text" id="address" placeholder="Full Address" required>
+      <input type="text" id="pincode" placeholder="Pincode" maxlength="6" required>
+      <input type="tel" id="phone" placeholder="Phone Number" maxlength="10" required>
+
+      <!-- PLACE ORDER BUTTON -->
+      <button class="btn-primary" onclick="placeOrder()" style="width:100%;margin-top:20px;">
+        Place Order
+      </button>
+
+      <button class="btn-secondary" onclick="window.location.href='cart.html'">
+        Back to Cart
+      </button>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <p>© 2026 FreshCart | 📞 +91 6382195807 | 📧 kvishnu1947@gmail.com</p>
+</footer>
+
+<script src="script.js"></script>
+<script>
+function loadPaymentDetails() {
+  const totalAmount = localStorage.getItem("cartTotal") || "0";
+  document.getElementById("amount").innerText = totalAmount;
+}
+
+async function placeOrder() {
+  const email = localStorage.getItem("email");
+  const paymentMethod = document.querySelector("input[name='payment']:checked").value;
+  const address = document.getElementById("address").value;
+  const pincode = document.getElementById("pincode").value;
+  const phone = document.getElementById("phone").value;
+
+  if (!address || !pincode || !phone) {
+    alert("Please fill all delivery details");
+    return;
+  }
+
+  if (pincode.length !== 6) {
+    alert("Pincode must be 6 digits");
+    return;
+  }
+
+  if (phone.length !== 10) {
+    alert("Phone number must be 10 digits");
+    return;
+  }
+
+  try {
+    const cartIds = JSON.parse(localStorage.getItem("cart")) || [];
+    const totalAmount = localStorage.getItem("cartTotal");
+
+    const res = await fetch("http://localhost:5000/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_email: email,
+        items: cartIds,
+        payment_method: paymentMethod,
+        address: address,
+        pincode: pincode,
+        phone: phone,
+        total: totalAmount
+      })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert("✅ Order Placed Successfully!\nOrder ID: " + (Math.random() * 1000000).toFixed(0));
+      localStorage.removeItem("cart");
+      localStorage.removeItem("cartTotal");
+      window.location.href = "index.html";
+    } else {
+      alert("❌ Order failed: " + data.error);
+    }
+  } catch (err) {
+    // Fallback for development
+    alert("✅ Order Placed Successfully!\nPayment Method: " + paymentMethod);
+    localStorage.removeItem("cart");
+    localStorage.removeItem("cartTotal");
+    window.location.href = "index.html";
+  }
+}
+
+loadPaymentDetails();
+updateCartCount();
+loadProfile();
+</script>
+</body>
+</html>

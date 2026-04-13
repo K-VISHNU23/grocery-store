@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details - FreshCart</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<script>
+if (!localStorage.getItem("role")) {
+  window.location.href = "login.html";
+}
+</script>
+
+<!-- NAVBAR -->
+<header class="navbar">
+  <h2 class="logo">🛒 FreshCart</h2>
+  <input id="search" placeholder="Search products..." class="search-bar">
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="products.html">Shop</a>
+    <a href="cart.html">Cart (<span id="cart-count">0</span>)</a>
+    <button onclick="toggleProfile()" class="profile-btn">👤</button>
+  </div>
+</header>
+
+<!-- PRODUCT DETAILS -->
+<section class="product-detail-section">
+  <div id="productDetail" class="product-detail-container"></div>
+</section>
+
+<!-- RELATED PRODUCTS -->
+<section class="related-section">
+  <h2>More Products</h2>
+  <div id="relatedProducts" class="products-grid"></div>
+</section>
+
+<footer class="footer">
+  <p>© 2026 FreshCart | 📞 +91 6382195807 | 📧 kvishnu1947@gmail.com</p>
+</footer>
+
+<script src="script.js"></script>
+<script>
+async function loadProduct() {
+  const id = new URLSearchParams(window.location.search).get("id");
+
+  try {
+    const res = await fetch("http://localhost:5000/api/products");
+    const allProducts = await res.json();
+
+    const product = allProducts.find(x => x.id == id);
+
+    if (!product) {
+      document.getElementById("productDetail").innerHTML = "<p>Product not found</p>";
+      return;
+    }
+
+    document.getElementById("productDetail").innerHTML = `
+      <div class="detail-left">
+        <img src="${product.img}" alt="${product.name}">
+      </div>
+      <div class="detail-right">
+        <h1>${product.name}</h1>
+        <p class="rating">⭐⭐⭐⭐⭐ (120 reviews)</p>
+        <h2 class="price">₹${product.price}</h2>
+        <p class="description">High quality fresh ${product.name} directly from farms.</p>
+        
+        <div class="quantity-selector">
+          <button onclick="decreaseQty()">-</button>
+          <input id="quantity" type="number" value="1" min="1">
+          <button onclick="increaseQty()">+</button>
+        </div>
+
+        <button class="btn-primary" onclick="addToCart(${product.id})">Add to Cart</button>
+        <button class="btn-secondary" onclick="buyNow(${product.id})">Buy Now</button>
+
+        <div class="product-info">
+          <h3>Product Information</h3>
+          <p>✓ Fresh and Quality Assured</p>
+          <p>✓ Free Shipping on Orders Above ₹500</p>
+          <p>✓ 7-Day Easy Returns</p>
+          <p>✓ Cash on Delivery Available</p>
+        </div>
+      </div>
+    `;
+
+    // Load related products
+    loadRelatedProducts(allProducts, product.category);
+  } catch (err) {
+    console.log("Error loading product");
+  }
+}
+
+function loadRelatedProducts(products, category) {
+  const related = products.filter(p => p.category === category).slice(0, 4);
+  const container = document.getElementById("relatedProducts");
+  container.innerHTML = "";
+
+  related.forEach(p => {
+    container.innerHTML += `
+      <div class="product-card" onclick="openProduct(${p.id})">
+        <img src="${p.img}" alt="${p.name}">
+        <h3>${p.name}</h3>
+        <p class="price">₹${p.price}</p>
+        <button class="btn-small" onclick="addToCart(${p.id}, event)">Add</button>
+      </div>
+    `;
+  });
+}
+
+function decreaseQty() {
+  const qty = document.getElementById("quantity");
+  if (qty.value > 1) qty.value--;
+}
+
+function increaseQty() {
+  const qty = document.getElementById("quantity");
+  qty.value++;
+}
+
+function buyNow(id) {
+  const qty = document.getElementById("quantity").value;
+  addToCart(id);
+  window.location.href = "cart.html";
+}
+
+loadProduct();
+updateCartCount();
+loadProfile();
+</script>
+</body>
+</html>

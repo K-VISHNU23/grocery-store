@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="center">
+
+<div class="login-box">
+  <h2 id="title">Login</h2>
+
+  <!-- USERNAME (SIGNUP ONLY) -->
+  <input id="username" placeholder="Username" style="display:none">
+
+  <!-- PHONE (SIGNUP ONLY) -->
+  <input id="phone" placeholder="Phone Number" style="display:none">
+
+  <!-- EMAIL -->
+  <input id="email" placeholder="Email">
+
+  <!-- PASSWORD -->
+  <input id="password" type="password" placeholder="Password">
+
+  <!-- ROLE -->
+  <select id="role">
+    <option value="user">User</option>
+    <option value="admin">Admin</option>
+  </select>
+
+  <!-- PASSWORD RULES -->
+  <p style="font-size:12px;color:gray;text-align:left;">
+    For Users:<br>
+    • At least 8 characters<br>
+    • One uppercase letter<br>
+    • One number<br>
+    • One special character (@,#,$...)  
+  </p>
+
+  <button onclick="handleAuth()">Continue</button>
+
+  <p onclick="toggleMode()" style="cursor:pointer;color:blue;">
+    Don't have account? Sign Up
+  </p>
+</div>
+
+<script>
+let isLogin = true;
+
+/* SWITCH LOGIN ↔ SIGNUP */
+function toggleMode() {
+  isLogin = !isLogin;
+
+  document.getElementById("title").innerText = isLogin ? "Login" : "Sign Up";
+
+  document.getElementById("username").style.display = isLogin ? "none" : "block";
+  document.getElementById("phone").style.display = isLogin ? "none" : "block";
+}
+
+/* VALIDATIONS */
+function validateEmail(email) {
+  return /\S+@\S+\.\S+/.test(email);
+}
+
+function validatePassword(password) {
+  return /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(password);
+}
+
+function validatePhone(phone) {
+  return /^[0-9]{10}$/.test(phone);
+}
+
+/* MAIN AUTH FUNCTION */
+function handleAuth() {
+  const username = document.getElementById("username").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const role = document.getElementById("role").value;
+
+  if (!validateEmail(email)) {
+    alert("Enter valid email");
+    return;
+  }
+
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+
+  /* 🔴 ADMIN LOGIN (STRICT) */
+  if (role === "admin") {
+    if (email === "kvishnu1947@gmail.com" && password === "1234") {
+      localStorage.setItem("role", "admin");
+      window.location.href = "admin.html";
+    } else {
+      alert("Invalid admin credentials");
+    }
+    return;
+  }
+
+  /* 👤 USER PASSWORD VALIDATION */
+  if (!validatePassword(password)) {
+    alert("Password must contain uppercase, number, special character and 8+ length");
+    return;
+  }
+
+  /* 👤 LOGIN */
+  if (isLogin) {
+    const user = users.find(u => u.email === email && u.password === password);
+
+    if (!user) {
+      alert("No account found. Please sign up.");
+      return;
+    }
+
+    localStorage.setItem("role", "user");
+    localStorage.setItem("email", email);
+    localStorage.setItem("currentUser", JSON.stringify(user));
+    window.location.href = "index.html";
+  }
+
+  /* 👤 SIGNUP */
+  else {
+    if (!username || !phone) {
+      alert("Fill all fields");
+      return;
+    }
+
+    if (!validatePhone(phone)) {
+      alert("Enter valid 10-digit phone number");
+      return;
+    }
+
+    const exists = users.find(u => u.email === email);
+
+    if (exists) {
+      alert("User already exists");
+      return;
+    }
+
+    users.push({ username, phone, email, password });
+    localStorage.setItem("users", JSON.stringify(users));
+
+    alert("Signup successful! Please login.");
+    toggleMode();
+  }
+}
+</script>
+
+</body>
+</html>
