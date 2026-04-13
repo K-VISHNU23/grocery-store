@@ -9,8 +9,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: Docker Login
@@ -25,17 +28,23 @@ jobs:
       - name: Build Frontend
         run: docker build -t vishnuk08/frontend:latest ./frontend
 
-      - name: Push Images
+      - name: Push Docker Images
         run: |
           docker push vishnuk08/backend:latest
           docker push vishnuk08/frontend:latest
 
       - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.0.0
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            sudo kubectl rollout restart deployment backend
-            sudo kubectl rollout restart deployment frontend
+            docker pull vishnuk08/backend:latest
+            docker pull vishnuk08/frontend:latest
+            docker stop backend || true
+            docker stop frontend || true
+            docker rm backend || true
+            docker rm frontend || true
+            docker run -d -p 5000:5000 --name backend vishnuk08/backend:latest
+            docker run -d -p 3000:3000 --name frontend vishnuk08/frontend:latest
